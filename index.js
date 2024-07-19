@@ -1,6 +1,8 @@
 import express from "express";
 import dotenv from "dotenv";
-dotenv.config()
+import { getHealth } from "./controllers/data.js";
+
+dotenv.config();
 
 const app = express();
 app.use(express.json());
@@ -112,42 +114,39 @@ app.put("/plant/:id", (req, res) => {
     });
 });
 
-app.delete("/plant/:id",(req,res)=>{
+app.delete("/plant/:id", (req, res) => {
+    const { id } = req.params;
 
-    const {id} = req.params
+    const plantIndex = plants.findIndex((plant) => plant.id == id);
 
-    let index = -1
-
-    plants.forEach((plant,i)=>{
-        if(plant.id == id){
-            index = i
-        }
-    })
-
-    plants.splice(index,1)
-
-    if(index==-1){
+    if (plantIndex === -1) {
         return res.json({
-            success:false,
-            message:`plant not found with index ${id}`
-        })
+            success: false,
+            message: `Plant not found for id ${id}`,
+            data: null
+        });
     }
 
+    plants.splice(plantIndex, 1);
+
     res.json({
-        success:true,
-        message:"plant deleted successfully",
-        data:null
-    })
-})
+        success: true,
+        message: "Plant deleted successfully",
+        data: null
+    });
+});
 
-app.use("*",(req,res)=>{
-    res.send(`<div>
-        <h1 style="text-align:center" >404 PAGE NOT FOUND</h1>
+app.get("/health", getHealth);
+
+app.use("*", (req, res) => {
+    res.send(`
+        <div>
+            <h1 style="text-align:center">404 PAGE NOT FOUND</h1>
         </div>
-        `)
-})
+    `);
+});
 
-const PORT = process.env.PORT
+const PORT = process.env.PORT;
 
 app.listen(PORT, () => {
     console.log(`Server is running on PORT ${PORT}`);
